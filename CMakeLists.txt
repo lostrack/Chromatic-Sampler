@@ -59,7 +59,7 @@ target_compile_definitions(ChromaticSampler PUBLIC
     JUCE_REPORT_APP_USAGE=0)
 
 # Licensing (see seleven-license/README.md). Fill in the ids from the Lemon Squeezy dashboard.
-target_include_directories(ChromaticSampler PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../seleven-license)
+target_include_directories(ChromaticSampler PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/seleven-license)
 target_compile_definitions(ChromaticSampler PRIVATE
     SELEVEN_PRODUCT="Chromatic Sampler"
     SELEVEN_SLUG="chromatic"
