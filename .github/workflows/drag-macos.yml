@@ -1,0 +1,62 @@
+name: Drag macOS build
+
+on:
+  push:
+    paths: ["drag/**", "ThirdParty/**", ".github/workflows/drag-macos.yml"]
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S drag -B build -G Xcode
+
+      - name: Build (AU, VST3, Standalone)
+        run: cmake --build build --config Release
+
+      - name: Ad-hoc sign (Apple Silicon refuses unsigned code)
+        run: |
+          cd build/DragSampler_artefacts/Release
+          for b in "AU/Drag Sampler.component" "VST3/Drag Sampler.vst3" "Standalone/Drag Sampler.app"; do
+            codesign --force --deep --sign - "$b"
+          done
+
+      - name: Make installer (.pkg) and disk image (.dmg)
+        run: |
+          set -e
+          R="$GITHUB_WORKSPACE/build/DragSampler_artefacts/Release"
+          P="$RUNNER_TEMP/pkgs"; mkdir -p "$P" dist
+          mk() { # name, source, install-location
+            mkdir -p "$P/root-$1"; cp -R "$2" "$P/root-$1/"
+            pkgbuild --root "$P/root-$1" --install-location "$3" --identifier "com.selevenaudio.dragsampler.$1" --version 1.0.0 "$P/$1.pkg"
+          }
+          mk au         "$R/AU/Drag Sampler.component"    "/Library/Audio/Plug-Ins/Components"
+          mk vst3       "$R/VST3/Drag Sampler.vst3"       "/Library/Audio/Plug-Ins/VST3"
+          mk standalone "$R/Standalone/Drag Sampler.app"  "/Applications"
+          cat > "$P/dist.xml" <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <installer-gui-script minSpecVersion="1">
+            <title>Drag Sampler</title>
+            <options customize="allow" require-scripts="false" hostArchitectures="arm64,x86_64"/>
+            <choices-outline>
+              <line choice="au"/><line choice="vst3"/><line choice="standalone"/>
+            </choices-outline>
+            <choice id="au" title="Audio Unit (Logic, GarageBand)"><pkg-ref id="com.selevenaudio.dragsampler.au"/></choice>
+            <choice id="vst3" title="VST3"><pkg-ref id="com.selevenaudio.dragsampler.vst3"/></choice>
+            <choice id="standalone" title="Standalone app"><pkg-ref id="com.selevenaudio.dragsampler.standalone"/></choice>
+            <pkg-ref id="com.selevenaudio.dragsampler.au">au.pkg</pkg-ref>
+            <pkg-ref id="com.selevenaudio.dragsampler.vst3">vst3.pkg</pkg-ref>
+            <pkg-ref id="com.selevenaudio.dragsampler.standalone">standalone.pkg</pkg-ref>
+          </installer-gui-script>
+          XML
+          productbuild --distribution "$P/dist.xml" --package-path "$P" "dist/Drag Sampler Installer.pkg"
+          mkdir -p "$P/dmg"; cp "dist/Drag Sampler Installer.pkg" "$P/dmg/"
+          hdiutil create -volname "Drag Sampler" -srcfolder "$P/dmg" -ov -format UDZO "dist/Drag-Sampler-1.0.0.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DragSampler-macOS
+          path: dist/*

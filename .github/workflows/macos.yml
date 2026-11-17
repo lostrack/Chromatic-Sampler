@@ -2,6 +2,7 @@ name: macOS build
 
 on:
   push:
+    paths-ignore: ["drag/**", ".github/workflows/drag-macos.yml"]
   pull_request:
   workflow_dispatch:
 
