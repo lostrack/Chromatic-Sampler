@@ -214,6 +214,9 @@ void DragSamplerEditor::drawLane (juce::Graphics& g, const std::vector<float>& h
         const float cx = -band + u * (W + 2.0f * band);
         juce::ColourGradient sweep (wc.withAlpha (0.0f), cx - band, 0, wc.withAlpha (0.0f), cx + band, 0, false);
         sweep.addColour (0.5, wc.withAlpha (0.22f * fade));
+        // fill only the band, not the whole waveform a second time (CoreGraphics on macOS is slow at full-path gradient fills)
+        juce::Graphics::ScopedSaveState clip (g);
+        g.reduceClipRegion (juce::Rectangle<float> (cx - band, top, 2.0f * band, h).toNearestIntEdges());
         g.setGradientFill (sweep);
         g.fillPath (body);
     }

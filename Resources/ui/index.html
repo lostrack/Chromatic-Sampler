@@ -132,7 +132,7 @@ select.sel:focus{border-color:var(--accent-line)}
 .note{font-size:56px;font-weight:700;line-height:.85;letter-spacing:-.04em;color:var(--text);position:relative}
 .note.empty{color:var(--faint)}
 .note sup{font-size:.36em;vertical-align:top;position:relative;top:.2em;margin-left:2px;color:var(--accent-2);letter-spacing:0}
-.note::before{content:"";position:absolute;left:-20px;top:-26px;width:110px;height:110px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 62%,rgba(var(--ar),.5) 76%,transparent 90%);filter:blur(10px);opacity:.45;z-index:-1;animation:spin 7s linear infinite}
+.note::before{content:"";position:absolute;left:-20px;top:-26px;width:110px;height:110px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 62%,rgba(var(--ar),.5) 76%,transparent 90%);filter:blur(10px);opacity:.45;z-index:-1;animation:spin 7s linear infinite;will-change:transform}
 .note.empty::before{display:none}
 .note.bump{animation:bump .4s cubic-bezier(.2,.8,.2,1)}
 .root-side{text-align:right;padding-bottom:2px}
@@ -679,6 +679,7 @@ function fxDraw(dt){
 }
 function fxLoop(ts){
   requestAnimationFrame(fxLoop);
+  if (ts - PX.last < 30) return; // 30 fps is enough for ambient particles and halves the full-window redraw
   const dt = Math.min(.05, (ts - PX.last)/1000 || 0); PX.last = ts; PX.t += dt;
   fxDraw(dt);
 }
@@ -1667,8 +1668,18 @@ function syncKnobs(force){
   for (const id of ['attack','decay','sustain','release','glide','revAmt','dlyMs','dlyFb','dlyAmt','dlySpread','satDrive','revLo','revHi','volume','fine'])
     if (!knobs[id].dragging()) knobs[id].setValue(P[id], false);
 }
+let lastStateSig = '';
 function applyState(msg){
   const sample = msg.sample || {}, snap = msg.snap || {};
+  // the engine sends state 30 times a second; redraw the page only when something besides the playhead changed
+  const sig = JSON.stringify(Object.assign({}, msg, { snap: 0 })) + eqDragging + waveDrag + handleDrag;
+  if (sig === lastStateSig){
+    const prev = SNAP.stage;
+    SNAP.stage = snap.stage ?? -1; SNAP.frac = snap.frac ?? 0; SNAP.level = snap.level ?? 0; SNAP.playPos = snap.playPos ?? -1;
+    if (SNAP.stage >= 0 && SNAP.stage <= 2 && (prev < 0 || prev === 3)) pulse();
+    return;
+  }
+  lastStateSig = sig;
   for (const key of Object.keys(msg)){
     if (key === 'sample' || key === 'snap') continue;
     if (eqDragging && key.startsWith('flt')) continue;
