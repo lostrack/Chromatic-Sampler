@@ -1,7 +1,11 @@
-name: ping
+name: mac-probe
 on: push
 jobs:
-  ping:
-    runs-on: ubuntu-latest
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-14, macos-15]
+    runs-on: ${{ matrix.os }}
     steps:
-      - run: echo ok
+      - run: sw_vers && uname -m
