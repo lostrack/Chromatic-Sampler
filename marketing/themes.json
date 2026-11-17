@@ -1,0 +1,37 @@
+{
+ "ocean": {
+  "name": "Ocean",
+  "a": "#2997ff",
+  "b": "#7cc0ff",
+  "rgb": "41,151,255",
+  "glow": "#1d6fd1"
+ },
+ "ember": {
+  "name": "Ember",
+  "a": "#ff7a2f",
+  "b": "#ffb27a",
+  "rgb": "255,122,47",
+  "glow": "#d9531a"
+ },
+ "violet": {
+  "name": "Violet",
+  "a": "#a066ff",
+  "b": "#c9a8ff",
+  "rgb": "160,102,255",
+  "glow": "#7a3fe0"
+ },
+ "mint": {
+  "name": "Mint",
+  "a": "#1fd6a2",
+  "b": "#7cf0cd",
+  "rgb": "31,214,162",
+  "glow": "#10a87c"
+ },
+ "rose": {
+  "name": "Rose",
+  "a": "#ff4d8d",
+  "b": "#ff9cc0",
+  "rgb": "255,77,141",
+  "glow": "#d12a66"
+ }
+}

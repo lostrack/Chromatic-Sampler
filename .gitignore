@@ -1,0 +1,7 @@
+build/
+*.log
+installer/Output/
+marketing/renders/
+marketing/ui/
+marketing/ui6/
+*.bak.html
