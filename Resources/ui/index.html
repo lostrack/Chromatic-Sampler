@@ -47,7 +47,7 @@ button,select{font:inherit;color:inherit}
 .sp{flex:1}
 
 /* controls */
-.btn{background:rgba(255,255,255,.03);border:1px solid var(--line-2);border-radius:7px;padding:3px 9px;height:22px;font-size:10.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn{background:var(--well2);border:1px solid var(--line-2);border-radius:7px;padding:3px 9px;height:22px;font-size:10.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn:hover{color:var(--text);border-color:var(--accent-line);background:var(--accent-soft)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.35;pointer-events:none}
@@ -64,6 +64,7 @@ button,select{font:inherit;color:inherit}
 .seg.xs button{padding:2px 6px}
 select.sel{height:22px;background:var(--well2);border:1px solid var(--line-2);border-radius:7px;padding:0 6px;font-size:10.5px;color:var(--text);outline:none}
 select.sel:focus{border-color:var(--accent-line)}
+select.sel option,select.sel optgroup{background:var(--pop);color:var(--text)}
 .dim{opacity:.38;transition:opacity .25s}
 .stepper{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;height:24px}
 .stepper button{background:none;border:0;width:24px;height:100%;cursor:pointer;color:var(--muted);font-size:14px;line-height:1}
@@ -292,11 +293,49 @@ select.sel:focus{border-color:var(--accent-line)}
 .modal .note-s{font-size:10px;color:var(--muted);margin-top:3px}
 .modal input{width:100%;height:30px;background:var(--well2);border:1px solid var(--line-2);border-radius:8px;color:var(--text);padding:0 10px;font:inherit;font-size:12px;outline:none;margin:10px 0 12px;user-select:text}
 .modal input:focus{border-color:var(--accent-line)}
+.modal input::placeholder{color:var(--faint);opacity:1}
 .modal .act{display:flex;justify-content:flex-end;gap:8px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.primary:hover{background:var(--accent-2);color:#fff}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.btn.primary:hover{background:var(--accent-2);color:var(--bg)}
 .fh{position:absolute;top:5px;width:9px;height:9px;margin-left:-4.5px;background:var(--well);border:1.5px solid var(--accent-2);border-radius:2px;transform:rotate(45deg);pointer-events:none;z-index:3;box-shadow:0 0 6px rgba(var(--ar2),.6)}
 @keyframes appIn{from{opacity:0}to{opacity:1}}
+/* activation pop-up over the blurred plugin, demo pill, news dot. Brand colours, not theme colours:
+   they belong to Seleven Audio and stay readable on every theme. Not scaled with .app, so they always fit. */
+#lic{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(0,0,0,.42);backdrop-filter:blur(14px) saturate(.85);transition:opacity .5s ease,backdrop-filter .5s ease,background .5s ease}
+#lic[hidden]{display:none}
+#lic.off{opacity:0;background:rgba(0,0,0,0);backdrop-filter:blur(0) saturate(1);pointer-events:none}
+#lic.off .lc{transform:scale(.97) translateY(6px)}
+.lc{width:300px;max-width:100%;max-height:100%;overflow:auto;background:rgba(14,14,15,.92);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px 18px 10px;box-shadow:0 30px 80px rgba(0,0,0,.6);color:#f4f4f2;text-align:center;transition:transform .5s ease;user-select:none}
+.lc svg{width:32px;height:32px;display:block;margin:0 auto}
+.lc h1{font-size:16px;margin:8px 0 3px;font-weight:700;letter-spacing:-.01em}
+.lc p{font-size:11.5px;color:rgba(244,244,242,.64);margin:0 0 12px}
+.lc input{width:100%;height:34px;background:#000;border:1px solid rgba(255,255,255,.14);border-radius:8px;color:#f4f4f2;padding:0 10px;font-family:var(--mono);font-size:12px;outline:none;user-select:text;text-align:center}
+.lc input:focus{border-color:#8fa9d4}
+.lc input::placeholder{color:rgba(244,244,242,.42);font-family:var(--sans)}
+.lc .go{width:100%;height:34px;margin-top:8px;border:0;border-radius:8px;background:#f4f4f2;color:#000;font-weight:700;font-size:12.5px;cursor:pointer}
+.lc .go:hover{background:#fff}.lc .go:disabled{opacity:.5;cursor:default}
+.lc .st{min-height:15px;font-size:11px;margin:7px 0 5px;color:rgba(244,244,242,.64)}
+.lc .st.ok{color:#9fd8b0}.lc .st.bad{color:#ff6b5e}
+.lc .links{display:flex;justify-content:center;gap:16px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px}
+.lc .links button{background:none;border:0;color:rgba(244,244,242,.64);font-size:11.5px;cursor:pointer;padding:2px}
+.lc .links button:hover{color:#f4f4f2}
+#demoPill{position:fixed;right:8px;bottom:6px;z-index:90;font:700 9.5px var(--mono);letter-spacing:.04em;color:#f4f4f2;background:rgba(14,14,15,.82);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;cursor:pointer}
+#demoPill:hover{background:#f4f4f2;color:#000}
+#demoPill[hidden],#news[hidden],#newsCard[hidden],#newsLink[hidden]{display:none}
+#news{position:fixed;left:0;top:0;z-index:85}
+#newsDot{display:block;width:18px;height:18px;padding:0;border:0;background:none;cursor:pointer;position:relative}
+#newsDot::before,#newsDot::after{content:"";position:absolute;left:5px;top:5px;width:7px;height:7px;border-radius:50%;background:#8fa9d4}
+#newsDot::after{animation:npulse 2.2s ease-out infinite}
+@keyframes npulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.8);opacity:0}}
+#newsCard{position:absolute;left:6px;top:18px;width:min(280px,calc(100vw - 16px));background:rgba(14,14,15,.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:9px 28px 10px 12px;color:#f4f4f2;box-shadow:0 14px 40px rgba(0,0,0,.45);animation:appIn .15s ease-out}
+#newsCard .tg{font:700 9.5px var(--mono);letter-spacing:.08em;color:#8fa9d4}
+#newsCard .tt{font-size:12.5px;font-weight:700;margin:3px 0 2px}
+#newsCard .bd{font-size:11px;color:rgba(244,244,242,.66);line-height:1.4}
+#newsCard .ln{display:inline-block;margin-top:6px;font-size:11px;color:#8fa9d4;cursor:pointer;background:none;border:0;padding:0}
+#newsCard .ln:hover{color:#f4f4f2}
+#newsCard .x{position:absolute;right:6px;top:6px;width:18px;height:18px;border:0;background:none;color:rgba(244,244,242,.5);font-size:15px;line-height:1;cursor:pointer;padding:0}
+#newsCard .x:hover{color:#f4f4f2}
+
 @keyframes flicker{0%,88%,100%{opacity:1;text-shadow:none}89%{opacity:.5;text-shadow:0 0 12px rgba(var(--ar),.8)}90%{opacity:1}92%{opacity:.65;text-shadow:0 0 8px rgba(var(--ar),.6)}93%{opacity:1}}
 @keyframes eq{0%,100%{transform:scaleY(.22)}50%{transform:scaleY(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -387,6 +426,11 @@ html[data-theme=glass] .panel{border-radius:20px;border-color:rgba(255,255,255,.
     <div class="msep"></div>
     <button class="mi" id="miWeb">Website <small>selevenaudio.com</small></button>
     <button class="mi" id="miAbout">About Chromatic Sampler</button>
+    <div id="miLic" hidden>
+      <div class="msep"></div>
+      <div class="mlbl">License</div>
+      <button class="mi" id="miLogout">Log out <small id="miLicKey"></small></button>
+    </div>
   </div>
 
   <div class="row">
@@ -539,6 +583,23 @@ html[data-theme=glass] .panel{border-radius:20px;border-color:rgba(255,255,255,.
   </div>
 
   <div class="toast" id="toast"></div>
+</div>
+
+<div id="lic" hidden role="dialog" aria-modal="true" aria-labelledby="licTitle">
+  <div class="lc">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(1.8 1.8) scale(.85)"><path d="M16.4 7.6C15.5 6 13.9 5.1 11.8 5.1 9.1 5.1 7.3 6.6 7.3 8.7c0 2 1.5 3 4.2 3.6l1 .2c2.8.6 4.2 1.6 4.2 3.7 0 2.2-2 3.7-4.8 3.7-2.4 0-4.2-1-5-2.8" fill="none" stroke="#f4f4f2" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.4 .4Q19.4 4.6 23.6 4.6 19.4 4.6 19.4 8.8 19.4 4.6 15.2 4.6 19.4 4.6 19.4 .4Z" fill="#8fa9d4"/></g></svg>
+    <h1 id="licTitle">Chromatic Sampler</h1>
+    <p>Paste the key from your order email.</p>
+    <input id="licKey" type="text" placeholder="License key" autocomplete="off" spellcheck="false" aria-label="License key">
+    <button class="go" id="licGo">Activate</button>
+    <div class="st" id="licSt" role="status"></div>
+    <div class="links"><button id="licDemo">Try the demo</button><button id="licBuy">Buy</button><button id="licLost">Lost your key?</button></div>
+  </div>
+</div>
+<button id="demoPill" hidden title="Activate to remove the demo noise">DEMO · Activate</button>
+<div id="news" hidden>
+  <button id="newsDot" aria-label="News from Seleven Audio"></button>
+  <div id="newsCard" hidden><div class="tg" id="newsTag"></div><div class="tt" id="newsTitle"></div><div class="bd" id="newsBody"></div><button class="ln" id="newsLink">Read more →</button><button class="x" id="newsX" aria-label="Close">×</button></div>
 </div>
 
 <script>
@@ -1656,6 +1717,7 @@ $('#themes').addEventListener('click', e => { const b = e.target.closest('.tsw')
 $('#miReset').addEventListener('click', () => { send('resetAll'); closeMenu(); toast('Settings reset'); });
 $('#miDemo').addEventListener('click', () => { send('demo'); closeMenu(); });
 $('#miWeb').addEventListener('click', () => { send('openUrl'); closeMenu(); });
+$('#miLogout').addEventListener('click', () => { closeMenu(); send('logout'); });
 $('#miAbout').addEventListener('click', () => { closeMenu(); about.hidden = false; });
 $('#aboutClose').addEventListener('click', () => { about.hidden = true; });
 $('#aboutWeb').addEventListener('click', () => send('openUrl'));
@@ -1671,6 +1733,7 @@ function syncKnobs(force){
 let lastStateSig = '';
 function applyState(msg){
   const sample = msg.sample || {}, snap = msg.snap || {};
+  $('#miLic').hidden = !msg.licenseKey; $('#miLicKey').textContent = msg.licenseKey || '';
   // the engine sends state 30 times a second; redraw the page only when something besides the playhead changed
   const sig = JSON.stringify(Object.assign({}, msg, { snap: 0 })) + eqDragging + waveDrag + handleDrag;
   if (sig === lastStateSig){
@@ -1720,6 +1783,79 @@ buildThemes(); fit(); buildMeter(); drawEnv(); renderPresets(); renderFxPresets(
 new ResizeObserver(sizeCanvases).observe(wrap);
 requestAnimationFrame(frame);
 send('ready');   // ask the engine to resend the waveform for this new page
+})();
+</script>
+<script>
+/* activation pop-up, demo pill and news dot.
+   JS -> C++ : licActivate {key}, licLink {which}, newsDismiss {id}, newsOpen
+   C++ -> JS : licResult {ok,msg}, news (item or null), state.licensed */
+(() => {
+const B = window.__JUCE__ && window.__JUCE__.backend;
+const send = (id, p) => { if (B) B.emitEvent(id, p || {}); };
+const $ = s => document.querySelector(s);
+const lic = $('#lic'), key = $('#licKey'), go = $('#licGo'), st = $('#licSt'), pill = $('#demoPill');
+let licensed = null, demoChosen = false, hideT = 0, justActivated = false;
+
+function status(msg, cls){ st.textContent = msg || ''; st.className = 'st' + (cls ? ' ' + cls : ''); }
+function refreshPill(){ pill.hidden = licensed !== false || !demoChosen || !lic.hidden; }
+function showLic(){
+  clearTimeout(hideT); lic.hidden = false; lic.classList.add('off'); void lic.offsetWidth; lic.classList.remove('off');
+  go.disabled = false; status(''); refreshPill(); setTimeout(() => key.focus(), 60);
+}
+function hideLic(delay){
+  clearTimeout(hideT);
+  hideT = setTimeout(() => { lic.classList.add('off'); hideT = setTimeout(() => { lic.hidden = true; refreshPill(); }, 520); }, delay || 0);
+}
+function activate(){
+  const k = key.value.trim();
+  if (!k){ status('Paste the key from your order email.', 'bad'); return; }
+  go.disabled = true; status('Checking your key…');
+  send('licActivate', { key: k });
+}
+go.addEventListener('click', activate);
+key.addEventListener('input', () => status(''));
+$('#licDemo').addEventListener('click', () => { demoChosen = true; hideLic(0); });
+$('#licBuy').addEventListener('click', () => send('licLink', { which: 'buy' }));
+$('#licLost').addEventListener('click', () => send('licLink', { which: 'lost' }));
+pill.addEventListener('click', showLic);
+// while the pop-up is up, keys belong to it, not to the piano or the shortcuts behind it
+for (const t of ['keydown', 'keyup']) addEventListener(t, e => {
+  if (lic.hidden || lic.classList.contains('off')) return;
+  e.stopImmediatePropagation();
+  if (t === 'keydown' && e.key === 'Enter' && e.target === key) activate();
+}, true);
+
+if (B){
+  B.addEventListener('licResult', r => {
+    go.disabled = false; status(r.msg, r.ok ? 'ok' : 'bad');
+    if (r.ok) justActivated = true;
+  });
+  B.addEventListener('state', m => {
+    const l = !!m.licensed;
+    if (l === licensed) return;
+    licensed = l; demoChosen = false;
+    if (l){ if (!lic.hidden) hideLic(justActivated ? 900 : 0); justActivated = false; }
+    else showLic(); // first open, log out, refund
+    refreshPill();
+  });
+}
+
+/* news: a dot in the corner; hover or click opens the card, x closes it for good */
+const news = $('#news'), card = $('#newsCard');
+let item = null;
+const openCard = o => { card.hidden = !o; };
+$('#newsDot').addEventListener('click', () => openCard(card.hidden));
+news.addEventListener('mouseenter', () => openCard(true));
+news.addEventListener('mouseleave', () => openCard(false));
+$('#newsLink').addEventListener('click', () => send('newsOpen'));
+$('#newsX').addEventListener('click', () => { if (item) send('newsDismiss', { id: item.id }); item = null; news.hidden = true; });
+if (B) B.addEventListener('news', it => {
+  item = it && it.id ? it : null;
+  news.hidden = !item; openCard(false);
+  if (!item) return;
+  $('#newsTag').textContent = item.tag || 'NEWS'; $('#newsTitle').textContent = item.title || '';
+  $('#newsBody').textContent = item.body || ''; $('#newsLink').hidden = !item.url;
+});
 })();
 </script>
 </body>

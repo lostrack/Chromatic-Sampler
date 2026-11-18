@@ -112,7 +112,7 @@ public:
             juce::MessageManager::callAsync([self, ok, msg, done]
             {
                 if (self == nullptr) return;
-                if (ok) self->clear();
+                self->clear(); // free locally even when the server is unreachable
                 if (done) done(ok, msg);
             });
         });

@@ -24,6 +24,8 @@ juce_add_plugin(ChromaticSampler
     PLUGIN_CODE Chrm
     FORMATS ${CS_FORMATS}
     PRODUCT_NAME "Chromatic Sampler"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/Resources/icons/chromatic-1024.png"
+    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/Resources/icons/chromatic-256.png"
     BUNDLE_ID com.selevenaudio.chromaticsampler
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE

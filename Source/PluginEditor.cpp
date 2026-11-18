@@ -35,39 +35,15 @@ ChromaticEditor::ChromaticEditor(ChromaticProcessor& p)
 
     // The window appears at once with a painted splash; the WebView2 environment is slow to create,
     // so it is built a moment later instead of blocking the host while it opens.
-    proc.license->addListener(this);
-    if (! proc.license->isActive()) { showGate(); return; }
+    news = std::make_unique<seleven::NewsFeed>([this](const seleven::NewsItem*) { sendNews(); });
     juce::Component::SafePointer<ChromaticEditor> safe(this);
     juce::Timer::callAfterDelay(15, [safe] { if (safe != nullptr) safe->createWeb(); });
 }
 
-// Activation screen with "Activate" and "Continue in demo". The WebView is a native window and would
-// cover JUCE components, so it is hidden while the screen is up.
-void ChromaticEditor::showGate()
+void ChromaticEditor::sendNews()
 {
-    if (web) web->setVisible(false);
-    gate = std::make_unique<seleven::LicenseGate>([this] { openPlugin(); }, [this] { openPlugin(); });
-    addAndMakeVisible(*gate);
-    resized();
-}
-
-void ChromaticEditor::openPlugin()
-{
-    gate.reset();
-    if (proc.license->isActive()) demoBar.reset();
-    else if (demoBar == nullptr)
-    {
-        demoBar = std::make_unique<seleven::DemoBar>([this] { showGate(); });
-        addAndMakeVisible(*demoBar);
-    }
-    if (web) web->setVisible(true); else createWeb();
-    resized();
-}
-
-void ChromaticEditor::licenseChanged()
-{
-    if (proc.license->isActive()) { if (demoBar) { demoBar.reset(); resized(); } }
-    else if (gate == nullptr) showGate(); // deactivated or refunded
+    const auto* it = news ? news->current() : nullptr;
+    if (web) web->emitEventIfBrowserIsVisible("news", it ? it->toVar() : juce::var());
 }
 
 void ChromaticEditor::paint(juce::Graphics& g)
@@ -143,15 +119,48 @@ void ChromaticEditor::createWeb()
                 }
         })
         // the page is new each time the window opens: send the waveform again once it is listening
-        .withEventListener("ready", [this](const juce::var&) { lastSeq = -1; })
+        .withEventListener("ready", [this](const juce::var&) { lastSeq = -1; sendNews(); })
+        .withEventListener("licActivate", [this](const juce::var& v)
+        {
+            juce::Component::SafePointer<ChromaticEditor> safe(this);
+            proc.license->activate(v.getProperty("key", "").toString().trim(), [safe](bool ok, juce::String msg)
+            {
+                auto* o = new juce::DynamicObject();
+                o->setProperty("ok", ok);
+                o->setProperty("msg", msg);
+                if (safe != nullptr && safe->web) safe->web->emitEventIfBrowserIsVisible("licResult", juce::var(o));
+                else delete o;
+            });
+        })
+        .withEventListener("licLink", [](const juce::var& v)
+        {
+            juce::URL(v.getProperty("which", "").toString() == "buy" ? juce::String(SELEVEN_BUY_URL)
+                                                                       : juce::String(SELEVEN_SERVER "/account.html")).launchInDefaultBrowser();
+        })
+        .withEventListener("newsDismiss", [this](const juce::var& v) { if (news) news->dismiss(v.getProperty("id", "").toString()); })
+        .withEventListener("newsOpen", [this](const juce::var&)
+        {
+            // only the URL the feed vetted (https), never one from the page
+            if (const auto* it = news ? news->current() : nullptr)
+                if (it->url.isNotEmpty()) juce::URL(it->url).launchInDefaultBrowser();
+        })
         .withEventListener("openUrl", [](const juce::var&) { juce::URL("https://selevenaudio.com").launchInDefaultBrowser(); })
         .withEventListener("clear", [this](const juce::var&) { proc.clearSample(); })
-        .withEventListener("deactivateLicense", [this](const juce::var&)
+        .withEventListener("logout", [this](const juce::var&)
         {
-            proc.license->deactivate([](bool ok, juce::String msg)
-            {
-                if (! ok) juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "Deactivate", msg);
-            });
+            auto lic = proc.license; // keep the manager alive while the dialog is open
+            juce::AlertWindow::showOkCancelBox(juce::MessageBoxIconType::QuestionIcon, "Log out",
+                "Deactivate this computer for key " + lic->maskedKey() + "?\nThe slot is freed so the key can be used on another computer.",
+                "Log out", "Cancel", this,
+                juce::ModalCallbackFunction::create([lic](int r)
+                {
+                    if (r == 0) return;
+                    lic->deactivate([](bool ok, juce::String msg)
+                    {
+                        if (! ok) juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "Log out",
+                                                                         "Logged out on this computer, but the server could not free the slot: " + msg);
+                    });
+                }));
         });
 
     web = std::make_unique<juce::WebBrowserComponent>(options);
@@ -165,16 +174,12 @@ void ChromaticEditor::createWeb()
 
 ChromaticEditor::~ChromaticEditor()
 {
-    proc.license->removeListener(this);
     stopTimer();
 }
 
 void ChromaticEditor::resized()
 {
-    auto r = getLocalBounds();
-    if (demoBar) demoBar->setBounds(r.removeFromBottom(26).reduced(6, 3));
-    if (web) web->setBounds(r);
-    if (gate) gate->setBounds(getLocalBounds());
+    if (web) web->setBounds(getLocalBounds());
 }
 
 void ChromaticEditor::timerCallback()
@@ -276,6 +281,8 @@ juce::var ChromaticEditor::buildState()
     env->setProperty("level", (double) snap.level);
     env->setProperty("playPos", (double) snap.playPos);
     root->setProperty("snap", juce::var(env));
+    root->setProperty("licensed", proc.license->isActive());
+    root->setProperty("licenseKey", proc.license->isActive() ? proc.license->maskedKey() : juce::String());
 
     return juce::var(root);
 }

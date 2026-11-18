@@ -3,6 +3,7 @@
 #include <juce_opengl/juce_opengl.h>
 #include "PluginProcessor.h"
 #include "LicenseGate.h"
+#include "SelevenNews.h"
 
 // A single strip showing the whole loop. The waveform stays still; the record
 // line sweeps left to right and wraps, overwriting the oldest audio.
@@ -34,6 +35,7 @@ private:
     void updateGate();
     std::unique_ptr<seleven::LicenseGate> gate;
     std::unique_ptr<seleven::DemoBar> demoBar;
+    std::unique_ptr<seleven::NewsDot> news;
     void showGate();
     void layoutLicense();
     bool holdingPreview = false;

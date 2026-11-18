@@ -29,6 +29,8 @@ juce_add_plugin(DragSampler
     PLUGIN_CODE DrSm
     FORMATS ${DS_FORMATS}
     PRODUCT_NAME "Drag Sampler"
+    ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/../Resources/icons/drag-1024.png"
+    ICON_SMALL "${CMAKE_CURRENT_SOURCE_DIR}/../Resources/icons/drag-256.png"
     PLUGIN_NAME "Drag Sampler"
     DESCRIPTION "Invisible always-on recorder"
     VST3_CATEGORIES Fx Tools

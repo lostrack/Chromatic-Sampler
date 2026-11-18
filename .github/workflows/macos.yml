@@ -2,7 +2,7 @@ name: macOS build
 
 on:
   push:
-    paths-ignore: ["drag/**", ".github/workflows/drag-macos.yml"]
+    paths-ignore: ["drag/**", "installer/mac/**", ".github/workflows/drag-macos.yml"]
   pull_request:
   workflow_dispatch:
 
@@ -46,6 +46,10 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?>
           <installer-gui-script minSpecVersion="1">
             <title>Chromatic Sampler</title>
+            <welcome file="welcome.html" mime-type="text/html"/>
+            <conclusion file="conclusion.html" mime-type="text/html"/>
+            <background file="background.png" alignment="bottomleft" scaling="none"/>
+            <background-darkAqua file="background-dark.png" alignment="bottomleft" scaling="none"/>
             <options customize="allow" require-scripts="false" hostArchitectures="arm64,x86_64"/>
             <choices-outline>
               <line choice="au"/><line choice="vst3"/><line choice="standalone"/>
@@ -59,7 +63,7 @@ jobs:
           </installer-gui-script>
           XML
 
-          productbuild --distribution "$P/dist.xml" --package-path "$P" "dist/Chromatic Sampler Installer.pkg"
+          productbuild --distribution "$P/dist.xml" --resources "$GITHUB_WORKSPACE/installer/mac/chromatic" --package-path "$P" "dist/Chromatic Sampler Installer.pkg"
 
           mkdir -p "$P/dmg"; cp "dist/Chromatic Sampler Installer.pkg" "$P/dmg/"
           hdiutil create -volname "Chromatic Sampler" -srcfolder "$P/dmg" -ov -format UDZO "dist/Chromatic-Sampler-1.0.0.dmg"

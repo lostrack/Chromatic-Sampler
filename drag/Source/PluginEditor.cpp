@@ -45,6 +45,8 @@ DragSamplerEditor::DragSamplerEditor (DragSamplerProcessor& p)
     setSize (proc.uiWidth.load(), proc.uiHeight.load());
     applyOpenGL();
     applyFps();
+    news = std::make_unique<seleven::NewsDot>();
+    addChildComponent (*news);
     proc.license->addListener (this);
     updateGate();
 }
@@ -75,7 +77,9 @@ void DragSamplerEditor::showGate()
         addAndMakeVisible (*demoBar);
         layoutLicense();
     };
+    auto backdrop = seleven::blurredSnapshot (*this); // before the gate exists, so it shows the strip itself
     gate = std::make_unique<seleven::LicenseGate> (toDemo, toDemo);
+    gate->setBackdrop (backdrop);
     addAndMakeVisible (*gate);
     layoutLicense();
 }
@@ -83,9 +87,10 @@ void DragSamplerEditor::showGate()
 void DragSamplerEditor::layoutLicense()
 {
     if (gate != nullptr) gate->setBounds (getLocalBounds());
+    const int h = juce::jlimit (12, 20, getHeight() - 6);
+    if (news != nullptr) news->layout();
     if (demoBar != nullptr)
     {
-        const int h = juce::jlimit (12, 20, getHeight() - 6);
         demoBar->setBounds (getWidth() - (getWidth() > 700 ? 380 : 150) - 6, 4, getWidth() > 700 ? 380 : 150, h);
     }
 }
@@ -546,13 +551,23 @@ void DragSamplerEditor::showMenu()
                       [this, refresh] { proc.muteOutput.store (! proc.muteOutput.load()); refresh(); });
     settings.addSeparator();
     settings.addItem ("Open Online Manual", [this] { openManual(); });
-    settings.addItem ("Deactivate This Computer", proc.license->isActive(), false, [this]
-    {
-        proc.license->deactivate ([] (bool ok, juce::String msg)
+    if (proc.license->isActive())
+        settings.addItem ("License: " + proc.license->maskedKey() + " - Log out", [this]
         {
-            if (! ok) juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Deactivate", msg);
+            auto lic = proc.license; // keep the manager alive while the dialog is open
+            juce::AlertWindow::showOkCancelBox (juce::MessageBoxIconType::QuestionIcon, "Log out",
+                "Deactivate this computer for key " + lic->maskedKey() + "?\nThe slot is freed so the key can be used on another computer.",
+                "Log out", "Cancel", this,
+                juce::ModalCallbackFunction::create ([lic] (int r)
+                {
+                    if (r == 0) return;
+                    lic->deactivate ([] (bool ok, juce::String msg)
+                    {
+                        if (! ok) juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon, "Log out",
+                                                                          "Logged out on this computer, but the server could not free the slot: " + msg);
+                    });
+                }));
         });
-    });
 
     juce::PopupMenu duration;
     for (double s : { 30.0, 60.0, 120.0, 300.0, 600.0, 900.0 })

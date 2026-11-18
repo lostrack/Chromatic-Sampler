@@ -1,0 +1,13 @@
+Chromatic Sampler - what gets installed where
+
+VST3 plugin (always)
+  C:\Program Files\Common Files\VST3$name.vst3
+
+Standalone app (optional)
+  C:\Program Files\Seleven Audio$name$name.exe
+  Start Menu shortcut, desktop shortcut if you tick it.
+
+Nothing else. No background services, no extra downloads.
+Uninstall from Settings > Apps.
+
+Close your DAW before you install, then rescan plugins.
