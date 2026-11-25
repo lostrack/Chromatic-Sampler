@@ -215,6 +215,11 @@ void ChromaticProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mi
     const float v = apvts.getRawParameterValue("volume")->load();
     buffer.applyGain(v * v * 1.25f);
     if (! license->isActive()) demoNag.process(buffer); // demo watermark
+
+    // speaker safety: never pass NaN/inf or more than 0 dBFS to the host
+    for (int c = 0; c < buffer.getNumChannels(); ++c)
+        for (auto* s = buffer.getWritePointer(c), *e = s + numSamples; s != e; ++s)
+            *s = std::isfinite(*s) ? juce::jlimit(-1.f, 1.f, *s) : 0.f;
 }
 
 void ChromaticProcessor::resetRange()

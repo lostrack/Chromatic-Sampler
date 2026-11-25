@@ -215,7 +215,11 @@ namespace SampleLoader
         const int ch = juce::jmin(2, (int) reader.numChannels);
         const int len = (int) reader.lengthInSamples;
         juce::AudioBuffer<float> raw(ch, len);
+        raw.clear();   // AudioBuffer starts uninitialised; macOS CoreAudio MP3 can return fewer frames than lengthInSamples
         reader.read(raw.getArrayOfWritePointers(), ch, 0, len);
+        for (int c = 0; c < ch; ++c)
+            for (auto* s = raw.getWritePointer(c), *e = s + len; s != e; ++s)
+                *s = std::isfinite(*s) ? juce::jlimit(-1.f, 1.f, *s) : 0.f;
 
         auto sd = finish(raw, reader.sampleRate, autoTrim);
         sd->name = name;
